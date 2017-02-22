@@ -1,28 +1,34 @@
-class CameraCalibration():
-    pass
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+class CameraCalibrator():
 
     """
-    
+    This class is responsible for providing image calibration
+    and image undistortion
     """
     def __init__(self, images):
-        #self.images = images
-        objpoints, imgpoints = get_points(images)
-        self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = \
-        calibrate_camera(objpoints, imgpoints)
-        
-    
-    
-    def get_points(self, images):
-        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+        if len(images) == 0:
+            raise ValueError('No images provided')
+        self.__mtx = None
+        self.__dist = None
+        self.__calibrated = False
+
+        self.__objpoints, self.__imgpoints = self.__get_calibration_points(images)
+
+    def __get_calibration_points(self, images):
+        # prepare object points and image points from all the images
+        """
+        :rtype: object
+        """
         objp = np.zeros((6*9,3), np.float32)
         objp[:,:2] = np.mgrid[0:9,0:6].T.reshape(-1,2)
 
         # Arrays to store object points and image points from all the images.
         objpoints = [] # 3d points in real world space
         imgpoints = [] # 2d points in image plane.
-
-        # Make a list of calibration images
-        #images = glob.glob('camera_cal/calibration*.jpg')
 
         # Step through the list and search for chessboard corners
         for fname in images:
@@ -33,30 +39,28 @@ class CameraCalibration():
             ret, corners = cv2.findChessboardCorners(gray, (9,6),None)
 
             # If found, add object points, image points
-            if ret == True:
+            if ret:
                 objpoints.append(objp)
                 imgpoints.append(corners)
 
                 # Draw and display the corners
                 img = cv2.drawChessboardCorners(img, (9,6), corners, ret)
-                #cv2.imshow('img',img)
-                #cv2.waitKey(500)
                 plt.figure()
                 plt.imshow(img)
                 plt.show()
             else:
                 print('not found')
-        #cv2.destroyAllWindows()
-        return objpoints, imgpoints
-        
-        
-    def calibrate_camera(self, images):
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
-        
-        
-    def undistort_image(objpoints, imgpoints, src_img):
 
+        return objpoints, imgpoints
+
+    def calibrate_camera(self, src_img):
         img_size = (src_img.shape[1], src_img.shape[0])
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
-        result = cv2.undistort(src_img, mtx, dist, None, mtx)
-        return result  
+        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(self.__objpoints, self.__imgpoints, img_size, None, None)
+        self.__mtx = mtx
+        self.__dist = dist
+        self.__calibrated = True
+
+    def undistort(self, src_img):
+        if self.__calibrated == False:
+            self.calibrate_camera(src_img)
+        return cv2.undistort(src_img, self.__mtx, self.__dist, None, self.__mtx)
