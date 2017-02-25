@@ -9,16 +9,16 @@ class CameraCalibrator():
     This class is responsible for providing image calibration
     and image undistortion
     """
-    def __init__(self, images):
+    def __init__(self, images, visualize=False):
         if len(images) == 0:
             raise ValueError('No images provided')
         self.__mtx = None
         self.__dist = None
         self.__calibrated = False
 
-        self.__objpoints, self.__imgpoints = self.__get_calibration_points(images)
+        self.__objpoints, self.__imgpoints = self.__get_calibration_points(images, visualize)
 
-    def __get_calibration_points(self, images):
+    def __get_calibration_points(self, images, visualize=False):
         # prepare object points and image points from all the images
         """
         :rtype: object
@@ -43,13 +43,22 @@ class CameraCalibrator():
                 objpoints.append(objp)
                 imgpoints.append(corners)
 
-                # Draw and display the corners
-                img = cv2.drawChessboardCorners(img, (9,6), corners, ret)
-                plt.figure()
-                plt.imshow(img)
-                plt.show()
+                if visualize:
+                    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+                    ax1.set_title('Original Image {}'.format(img.shape))
+                    ax1.imshow(img)
+
+                    # Draw and display the corners
+                    img = cv2.drawChessboardCorners(img, (9, 6), corners, ret)
+                    ax2.set_title('Chessboard corners {}'.format(img.shape))
+                    ax2.imshow(img)
             else:
-                print('not found')
+                if visualize:
+                    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+                    ax1.set_title('Original Image {}'.format(img.shape))
+                    ax1.imshow(img)
+
+                    ax2.set_title('Chessboard not found')
 
         return objpoints, imgpoints
 
