@@ -12,10 +12,6 @@ class PerspectiveTransformer:
 
     # Warp image to provide a bird's eye view
     def transform_matrix(self, src, dst):
-        # self.src = np.float32([[490, 482], [810, 482],
-        #                   [1250, 720], [40, 720]])
-        # self.src = np.float32([[0, 0], [1280, 0],
-        #                   [1250, 720], [40, 720]])
         M = cv2.getPerspectiveTransform(src, dst)
         Minv = cv2.getPerspectiveTransform(dst, src)
         return M, Minv
