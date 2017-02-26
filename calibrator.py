@@ -1,4 +1,5 @@
 import cv2
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,20 +10,23 @@ class CameraCalibrator():
     This class is responsible for providing image calibration
     and image undistortion
     """
-    def __init__(self, images, visualize=False):
-        if len(images) == 0:
-            raise ValueError('No images provided')
+    def __init__(self):
         self.__mtx = None
         self.__dist = None
         self.__calibrated = False
+        self.__objpoints = None
+        self.__imgpoints = None
 
-        self.__objpoints, self.__imgpoints = self.__get_calibration_points(images, visualize)
-
-    def __get_calibration_points(self, images, visualize=False):
+    def load_calibration_points(self, images_path, visualize=False):
         # prepare object points and image points from all the images
         """
         :rtype: object
         """
+        if len(images_path) == 0:
+            raise ValueError('No images path provided')
+
+        images = glob.glob(images_path)
+
         objp = np.zeros((6*9,3), np.float32)
         objp[:,:2] = np.mgrid[0:9,0:6].T.reshape(-1,2)
 
@@ -60,9 +64,13 @@ class CameraCalibrator():
 
                     ax2.set_title('Chessboard not found')
 
-        return objpoints, imgpoints
+        self.__objpoints = objpoints
+        self.__imgpoints = imgpoints
 
     def calibrate_camera(self, src_img):
+        if self.__objpoints is None or self.__imgpoints is None:
+            raise ValueError('Image points do not exist')
+
         img_size = (src_img.shape[1], src_img.shape[0])
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(self.__objpoints, self.__imgpoints, img_size, None, None)
         self.__mtx = mtx
