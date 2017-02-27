@@ -25,6 +25,40 @@ The goals / steps of this project are the following:
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
+[image_carnd_advanced_lane]: ./output_images/carnd_advanced_lane.png "Project structure"
+[image_load_calibration]: ./output_images/load_calibration.png "Load calibration points"
+[image_calibration_verification_1]: ./output_images/calibration_verification_1.png "Calibration result"
+[image_calibration_verification_2]: ./output_images/calibration_verification_2.png "Calibration result"
+[image_calibration_verification_3]: ./output_images/calibration_verification_3.png "Calibration result"
+
+[image_explorer_src_dst]: ./output_images/explorer_src_dst.png "Interactive UI for exploring src and dst points"
+
+
+[image_birds_eye_view_verification1]: ./output_images/birds_eye_view_verification1.png "Birds-eye verification result"
+[image_birds_eye_view_verification2]: ./output_images/birds_eye_view_verification2.png "Birds-eye verification result"
+[image_birds_eye_view_verification3]: ./output_images/birds_eye_view_verification3.png "Birds-eye verification result"
+[image_birds_eye_view_verification4]: ./output_images/birds_eye_view_verification4.png "Birds-eye verification result"
+[image_birds_eye_view_verification5]: ./output_images/birds_eye_view_verification5.png "Birds-eye verification result"
+[image_birds_eye_view_verification6]: ./output_images/birds_eye_view_verification6.png "Birds-eye verification result"
+
+
+[image_threshold_verification1]: ./output_images/threshold_verification1.png "Threshold verification result"
+[image_threshold_verification2]: ./output_images/threshold_verification2.png "Threshold verification result"
+[image_threshold_verification3]: ./output_images/threshold_verification3.png "Threshold verification result"
+[image_threshold_verification4]: ./output_images/threshold_verification4.png "Threshold verification result"
+[image_threshold_verification5]: ./output_images/threshold_verification5.png "Threshold verification result"
+[image_threshold_verification6]: ./output_images/threshold_verification6.png "Threshold verification result"
+
+[image_histogram_peak]: ./output_images/histogram_peak.png "Histogram of peaks"
+
+[image_polyfit_verification1]: ./output_images/polyfit_verification1.png "Polyfit - Verification"
+[image_polyfit_verification2]: ./output_images/polyfit_verification2.png "Polyfit - Verification"
+[image_polyfit_verification3]: ./output_images/polyfit_verification3.png "Polyfit - Verification"
+[image_polyfit_verification4]: ./output_images/polyfit_verification4.png "Polyfit - Verification"
+[image_polyfit_verification5]: ./output_images/polyfit_verification5.png "Polyfit - Verification"
+[image_polyfit_verification6]: ./output_images/polyfit_verification6.png "Polyfit - Verification"
+
+[image_overlay_result1]: ./output_images/overlay_result1.png "Overlay of the warped image to original image"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -34,46 +68,58 @@ The goals / steps of this project are the following:
 
 ####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
 
+
 You're reading it!
+
+###Project Structure
+The solution consists of one Jupyter Notebook and several custom python modules. Most of the image processing logics and lane finding algorithms are split in the several python modules and stored in the "lib" folder, and I used the Jupyter Notebook as a client application that leverages these modules. Here is the overview of the project structure: 
+![alt text][image_carnd_advanced_lane]
+
+- Jupyter Notebook file (P4_Advanced_Lane_Finding.ipynb): This is the entry point for the execution of the solution. This file is dependent on several custom modules as well as other python modules such as numpy and matplotlib.
+- CameraCalibrator (lib/calibrator.py): This class is responsible for providing camera calibration functionalities.
+- CarLane and Line (lib/carlane.py): CarLane and Line classes are responsible for computing the line detection and representing the left and right car lines.
+- PerpsectiveTransformer (lib/perspective_transformer.py): PerspectiveTransformer class is responsible for generating the "birds-eye view" image
+- ImageUtil (lib/imageutil.py): This class exposes several useful image manipulation methods
+- VideoUtil (lib/videoutil.py): This class exposes several useful video manipulation methods
+
 ###Camera Calibration
 
 ####1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the load_calibration_points method in the CameraCalibrator class.
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+Using the provided chessboard images, the load_calibration_points method went through each chessboard image and tried to find chessboard corners with the pattern size of (9, 6) using OpenCV's findChessboardCorners function. If all of the corners are found and they are placed in a certain order (row by row, left to right in every row), I store the return value from OpenCV's findChessboardCorners in `objpoints` which is an array of #d points in the real world space and `imgpoints` which is an array of 2d points in image plane.
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+Once the calibration points are loaded, I used calibrate_camera method in the CameraCalibrator class to compute the camera matrix and distortion coefficients. The calibrate_camera method leverages OpenCV's calibrateCamera function to compute the matrix and coefficients.
 
-![alt text][image1]
+Finally, I provided undistort method in the CameraCalibrator class which internally leverages OpenCV's undistort function, and I obtained these results:
+
+- Loading calibration points
+![alt text][image_load_calibration]
+
+- Example of a distortion corrected calibration image
+![alt text][image_calibration_verification_1]
+
 
 ###Pipeline (single images)
 
 ####1. Provide an example of a distortion-corrected image.
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
-####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like these examples:
 
-![alt text][image3]
+- Example 1
+![alt text][image_calibration_verification_2]
 
-####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+- Example 2
+![alt text][image_calibration_verification_3]
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
 
-```
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+####2. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-```
+The code for my perspective transform is found in the PerspectiveTransformer class. In the 8th code cell of the Jupyter Notebook, I created the explorer_perspective_transform_points method to explorer the various source and destination points with the UI as shown in the screenshot below:
+
+![alt text][image_explorer_src_dst]
+
+
 This resulted in the following source and destination points:
 
 | Source        | Destination   | 
@@ -83,25 +129,91 @@ This resulted in the following source and destination points:
 | 1127, 720     | 960, 720      |
 | 695, 460      | 960, 0        |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image. Here is a result of several warped images based on test images:
 
-![alt text][image4]
+![alt text][image_birds_eye_view_verification1]
+![alt text][image_birds_eye_view_verification2]
+![alt text][image_birds_eye_view_verification3]
+![alt text][image_birds_eye_view_verification4]
+![alt text][image_birds_eye_view_verification5]
+![alt text][image_birds_eye_view_verification6]
+
+####3. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+
+The code for the generation of a thresholded binary image can be found in the binary_thresholded_image method in the ImageUtil class. From the 10th to 13th code cells of the Jupyter Notebook, I explored various ways to explorer the optimal way to identify car lane lines. I explored various techniques including color and gradient thresholds to generate a binary image, and focused on how to identify the white and yellow lines. Techniques I explored included:
+- Sobel operators
+- Color thresholds based on channels on color spaces (HLS, HSV, LAB, and LUV)
+
+For the project video and challenge video, the combination of the L channel in the LUV color space and B channel in the LAB color space worked best for me. In summary:
+- L channel threshold (215 ~ 255)
+- B channel threshold (145 ~ 200)
+- Output: combined binary of the L channel and B channel thresholds.
+
+Here is the result of the generated binary images based on the warped images created from Step2.
+
+![alt text][image_threshold_verification1]
+![alt text][image_threshold_verification2]
+![alt text][image_threshold_verification3]
+![alt text][image_threshold_verification4]
+![alt text][image_threshold_verification5]
+![alt text][image_threshold_verification6]
+
 
 ####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+The code for identifying lane-line pixels can be found in the find_lane_pixels method of the CarLane class (lib/carlane.py). The code for calculating the polynomial fit can be found in the polyfit_lines method of the Line class (lib/carlane.py).  
 
-![alt text][image5]
+The first step of identifying the lane-line pixels is to find the peak for the left and right car line by examining the histogram of the binary thresholded image.
+![alt text][image_histogram_peak]
+
+As shown on the above histogram, there were two peaks, one on the left for a left car lane and the other for the right car lane. The next step is to perform a window sliding technique to capture the pixels on the specific window slide until the window sliding is complete. The picture below shows on the region of boxes in each window slide for searching pixels within the boxes.
+
+![alt text][image_polyfit_verification6]
+
+When the above step is done using the find_lane_pixels method of the CarLane class, I passed the discovered pixels to the polyfit_lines method of the left and right car line instance in the Line class (lib/carlane.py) to calculate the polynomial fit for each car line. 
+
 
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+As described in this article ["Radius of Curvature"](http://www.intmath.com/applications-differentiation/8-radius-curvature.php), the radius of curvature of the curve at a particular point is defined as the radius of the approximating circle. The formula for the radius of curvature at any point x for the curve y = f(x) is given by:
+```python
+	radius_of_curvature = ((1 + (2 * line_fit_cr[0] * y_eval * CarLane.ym_per_pix + line_fit_cr[1]) ** 2) ** 1.5) / np.absolute(2 * line_fit_cr[0])
+```
+where 
+```python
+	line_fit_cr[0] = A and line_fit_cr[1] = B 
+```	
+where A and B are the first and second term in a second order polynormial curve such that:
+```
+	f(y) = A * y * y + B * y + C
+```	
+
+The position of the vehicle can be calculated using the following code:
+```python
+	vehicle_position = line_fit[0] * image_shape[0] ** 2 + line_fit[1] * image_shape[0] + line_fit[2]
+```
+
+The code for above steps are found in the polyfit_lines method in the Line class (lib/carlane.py).
+
+Once both radius_of_curvature and vehicle_position are found for each car line, the CarLane class returns the final vehicle position and radius_of_curvature using the following method:
+```python
+    def vehicle_position(self, image_shape):
+        """ Return the position of vehicle """
+        return abs(image_shape[1] // 2 - ((self.left.line_base_pos + self.right.line_base_pos) / 2))
+
+    def radius_of_curvature(self):
+        """ Return the radius of curvature """
+        return (self.left.radius_of_curvature + self.right.radius_of_curvature) // 2
+``` 
+
 
 ####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+The overlay_image method in the CarLane class (lib/carlane.py) generates the lane area by creating a polygon filled in green color and warping the polygon with the inverse matrix for the perspective transformation. Then, the transformed polygon is overlayed onto the original image.
 
-![alt text][image6]
+I implemented the "console view" to show the overall pipeline of the image detection and the status of the pipeline. Here is an example of the console view:
+
+![alt text][image_overlay_result1]
 
 ---
 
@@ -109,7 +221,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result] for the project video (./project_video.mp4)
 
 ---
 

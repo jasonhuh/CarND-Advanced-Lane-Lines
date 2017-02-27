@@ -238,13 +238,13 @@ class Line:
         # was the line detected in the last iteration?
         self.detected = False
         # x values of the last n fits of the line
-        self.recent_xfitted = []
+        #self.recent_xfitted = []
         #average x values of the fitted line over the last n iterations
-        self.bestx = None
+        #self.bestx = None
         #polynomial coefficients averaged over the last n iterations
-        self.best_fit = None
+        #self.best_fit = None
         #polynomial coefficients for the most recent fit
-        self.current_fit = [np.array([False])]
+        #self.current_fit = [np.array([False])]
         #radius of curvature of the line in some units
         self.radius_of_curvature = None
         #distance in meters of vehicle center from the line
@@ -261,26 +261,31 @@ class Line:
         self.line_fit1_queue = deque(maxlen=Line.MAX_QUEUE_LENGTH)
         self.line_fit2_queue = deque(maxlen=Line.MAX_QUEUE_LENGTH)
 
-    def polyfit_lines(self, x, y, image_shape):
+        self.ploty = None
 
+    def polyfit_lines(self, allx, ally, image_shape):
+        """ Find the polynomial fit based on the discovered line points coordinates """
 
-        if len(x) > 0 and len(y) > 0:
+        if len(allx) > 0 and len(ally) > 0:
+            self.allx = allx
+            self.ally = ally
             # Fit a second order polynomial to each
-            line_fit = np.polyfit(y, x, 2)
+            line_fit = np.polyfit(ally, allx, 2)
             self.line_fit0_queue.append(line_fit[0])
             self.line_fit1_queue.append(line_fit[1])
             self.line_fit2_queue.append(line_fit[2])
         else: # Recover the missing x or y using the previous polyfit data
             #line_fit = [self.line_fit0_queue[0], self.line_fit1_queue[0], self.line_fit2_queue[0]]
             line_fit = [np.mean(self.line_fit0_queue), np.mean(self.line_fit1_queue), np.mean(self.line_fit2_queue)]
-        ploty = np.linspace(0, image_shape[0] - 1, image_shape[0])
-        line_fitx = line_fit[0] * ploty ** 2 + line_fit[1] * ploty + line_fit[2]
+        if self.ploty is None:
+            self.ploty = np.linspace(0, image_shape[0] - 1, image_shape[0])
+        line_fitx = line_fit[0] * self.ploty ** 2 + line_fit[1] * self.ploty + line_fit[2]
         line_fitx_int = line_fit[0] * image_shape[0] ** 2 + line_fit[1] * image_shape[0] + line_fit[2]
 
-        y_eval = np.max(ploty)
+        y_eval = np.max(self.ploty)
 
         # Fit new polynomials to x,y in world space
-        line_fit_cr = np.polyfit(y * CarLane.ym_per_pix, x * CarLane.xm_per_pix, 2)
+        line_fit_cr = np.polyfit(self.ally * CarLane.ym_per_pix, self.allx * CarLane.xm_per_pix, 2)
         #     # Calculate the new radii of curvature
         line_curverad = ((1 + (2 * line_fit_cr[0] * y_eval * CarLane.ym_per_pix + line_fit_cr[1]) ** 2) ** 1.5) / np.absolute(2 * line_fit_cr[0])
         self.radius_of_curvature = line_curverad
