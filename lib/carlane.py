@@ -24,7 +24,16 @@ class CarLane:
         return (self.left.radius_of_curvature + self.right.radius_of_curvature) // 2
 
     def find_lane_pixels(self, binary_warped):
-        """ Find lane line pixels """
+        """ Initially, this method will route to the find_lane_pixels_ws.
+            Then, it will route to the find_lane_pixels_fast to speed up the pixel findings.
+         """
+        if self.left.line_fit is None or self.right.line_fit is None:
+            return self.__find_lane_pixels_ws(binary_warped)
+        else:
+            return self.__find_lane_pixels_fast(binary_warped, self.left.line_fit, self.right.line_fit)
+
+    def __find_lane_pixels_ws(self, binary_warped):
+        """ Find lane line pixels using sliding windows. """
 
         # Take a histogram of the bottom half of the image
         histogram = np.sum(binary_warped[binary_warped.shape[0] / 2:, :], axis=0)
@@ -80,6 +89,34 @@ class CarLane:
         # Concatenate the arrays of indices
         left_lane_inds = np.concatenate(left_lane_inds)
         right_lane_inds = np.concatenate(right_lane_inds)
+
+        # TODO: Recover
+        self.left.detected = len(left_lane_inds) > 0
+        self.right.detected = len(right_lane_inds) > 0
+
+        # Extract left and right line pixel positions
+        leftx = nonzerox[left_lane_inds]
+        lefty = nonzeroy[left_lane_inds]
+        rightx = nonzerox[right_lane_inds]
+        righty = nonzeroy[right_lane_inds]
+
+        return leftx, lefty, rightx, righty
+
+    def __find_lane_pixels_fast(self, binary_warped, left_fit, right_fit):
+        """ Find lane line pixels efficiently by skipping the sliding windows step """
+
+        nonzero = binary_warped.nonzero()
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+
+        margin = 100
+
+        left_lane_inds = (
+        (nonzerox > (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy + left_fit[2] - margin)) & (
+        nonzerox < (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy + left_fit[2] + margin)))
+        right_lane_inds = (
+        (nonzerox > (right_fit[0] * (nonzeroy ** 2) + right_fit[1] * nonzeroy + right_fit[2] - margin)) & (
+        nonzerox < (right_fit[0] * (nonzeroy ** 2) + right_fit[1] * nonzeroy + right_fit[2] + margin)))
 
         # TODO: Recover
         self.left.detected = len(left_lane_inds) > 0
@@ -256,6 +293,8 @@ class Line:
         #y values for detected line pixels
         self.ally = None
 
+        self.line_fit = None # Store the line fit
+
         # Store recent polynomial coefficients for averaging across frames
         self.line_fit0_queue = deque(maxlen=Line.MAX_QUEUE_LENGTH)
         self.line_fit1_queue = deque(maxlen=Line.MAX_QUEUE_LENGTH)
@@ -266,21 +305,26 @@ class Line:
     def polyfit_lines(self, allx, ally, image_shape):
         """ Find the polynomial fit based on the discovered line points coordinates """
 
+        #flatten = lambda l: [item for sublist in l for item in sublist]
+
         if len(allx) > 0 and len(ally) > 0:
             self.allx = allx
             self.ally = ally
+
             # Fit a second order polynomial to each
-            line_fit = np.polyfit(ally, allx, 2)
-            self.line_fit0_queue.append(line_fit[0])
-            self.line_fit1_queue.append(line_fit[1])
-            self.line_fit2_queue.append(line_fit[2])
+            self.line_fit = np.polyfit(ally, allx, 2)
+            self.line_fit0_queue.append(self.line_fit[0])
+            self.line_fit1_queue.append(self.line_fit[1])
+            self.line_fit2_queue.append(self.line_fit[2])
         else: # Recover the missing x or y using the previous polyfit data
+            print('Recover using previous points')
             #line_fit = [self.line_fit0_queue[0], self.line_fit1_queue[0], self.line_fit2_queue[0]]
-            line_fit = [np.mean(self.line_fit0_queue), np.mean(self.line_fit1_queue), np.mean(self.line_fit2_queue)]
+            self.line_fit = [np.mean(self.line_fit0_queue), np.mean(self.line_fit1_queue), np.mean(self.line_fit2_queue)]
+
         if self.ploty is None:
             self.ploty = np.linspace(0, image_shape[0] - 1, image_shape[0])
-        line_fitx = line_fit[0] * self.ploty ** 2 + line_fit[1] * self.ploty + line_fit[2]
-        line_fitx_int = line_fit[0] * image_shape[0] ** 2 + line_fit[1] * image_shape[0] + line_fit[2]
+        line_fitx = self.line_fit[0] * self.ploty ** 2 + self.line_fit[1] * self.ploty + self.line_fit[2]
+        line_fitx_int = self.line_fit[0] * image_shape[0] ** 2 + self.line_fit[1] * image_shape[0] + self.line_fit[2]
 
         y_eval = np.max(self.ploty)
 
