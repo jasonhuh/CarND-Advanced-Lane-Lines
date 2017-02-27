@@ -80,7 +80,7 @@ Using the provided chessboard images, the load_calibration_points method went th
 
 Once the calibration points are loaded, I used calibrate_camera method in the CameraCalibrator class to compute the camera matrix and distortion coefficients. The calibrate_camera method leverages OpenCV's calibrateCamera function to compute the matrix and coefficients.
 
-Finally, I provided undistort method in the CameraCalibrator class which internally leverages OpenCV's undistort function, and I obtained these results:
+Finally, I provided the undistort method in the CameraCalibrator class which internally leverages OpenCV's undistort function, and I obtained these results:
 
 - Loading calibration points
 ![alt text][image_load_calibration]
@@ -171,7 +171,7 @@ where
 ```python
 	line_fit_cr[0] = A and line_fit_cr[1] = B 
 ```	
-where A and B are the first and second term in a second order polynormial curve such that:
+where A and B are the first and second term in a second order polynomial curve such that:
 ```
 	f(y) = A * y * y + B * y + C
 ```	
@@ -209,7 +209,10 @@ I implemented the "console view" to show the overall pipeline of the image detec
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result] for the project video (./project_video.mp4)
+Here's a video recording for the project video (./project_video.mp4):
+
+[![Alt text](https://img.youtube.com/vi/c71xPQXt2cg/0.jpg)](https://www.youtube.com/watch?v=c71xPQXt2cg)
+
 
 ---
 
@@ -217,5 +220,11 @@ Here's a [link to my video result] for the project video (./project_video.mp4)
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+I observed in the challenge_video.mp4 and harder_challenge_video_result.mp4 that it is difficult to identify car lines especially the white car lines with the binary threshold settings configured for the project video.
 
+I used the following techniques to make the pipeline more robust:
+- I kept the previous line pixels for each car line. When no pixels were found for the current image frame, I used the previous line pixels to recover from the failure.
+
+Here are some ideas to make the pipeline more robust:
+- Capture the brightness level of each frame, and depending on the brightness level, I may use a different binary threshold technique, i.e. using HSV filter in addition to existing LUV and LAB filters.
+- Validation of the line pixels and line fitting curve based on the history of the line pixels and fitting values. When there is a sudden change to the distribution of line pixels and fitting values compared to the previous value, I may discard the current line pixels and use the previously captured line pixels or capture line pixels using different binary threshold technique.

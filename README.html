@@ -1014,10 +1014,8 @@ body .markdown-body
     page-break-after: avoid;
   }
 }
-</style><title>writeup_report</title></head><body><article class="markdown-body"><h2 id="writeup-template"><a name="user-content-writeup-template" href="#writeup-template" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Writeup Template</h2>
-<h3 id="you-can-use-this-file-as-a-template-for-your-writeup-if-you-want-to-submit-it-as-a-markdown-file-but-feel-free-to-use-some-other-method-and-submit-a-pdf-if-you-prefer"><a name="user-content-you-can-use-this-file-as-a-template-for-your-writeup-if-you-want-to-submit-it-as-a-markdown-file-but-feel-free-to-use-some-other-method-and-submit-a-pdf-if-you-prefer" href="#you-can-use-this-file-as-a-template-for-your-writeup-if-you-want-to-submit-it-as-a-markdown-file-but-feel-free-to-use-some-other-method-and-submit-a-pdf-if-you-prefer" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.</h3>
-<hr />
-<p><strong>Advanced Lane Finding Project</strong></p>
+</style><title>README</title></head><body><article class="markdown-body"><h2 id="advanced-lane-finding"><a name="user-content-advanced-lane-finding" href="#advanced-lane-finding" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Advanced Lane Finding</h2>
+<p><a href="http://www.udacity.com/drive"><img alt="Udacity - Self-Driving Car NanoDegree" src="https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg" /></a></p>
 <p>The goals / steps of this project are the following:</p>
 <ul>
 <li>Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.</li>
@@ -1029,12 +1027,7 @@ body .markdown-body
 <li>Warp the detected lane boundaries back onto the original image.</li>
 <li>Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.</li>
 </ul>
-<h2 id="rubric-points"><a href="https://review.udacity.com/#!/rubrics/571/view">Rubric</a> Points</h2>
-<h3 id="here-i-will-consider-the-rubric-points-individually-and-describe-how-i-addressed-each-point-in-my-implementation"><a name="user-content-here-i-will-consider-the-rubric-points-individually-and-describe-how-i-addressed-each-point-in-my-implementation" href="#here-i-will-consider-the-rubric-points-individually-and-describe-how-i-addressed-each-point-in-my-implementation" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Here I will consider the rubric points individually and describe how I addressed each point in my implementation.</h3>
-<hr />
-<h3 id="writeup-readme"><a name="user-content-writeup-readme" href="#writeup-readme" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Writeup / README</h3>
-<h4 id="1-provide-a-writeup-readme-that-includes-all-the-rubric-points-and-how-you-addressed-each-one-you-can-submit-your-writeup-as-markdown-or-pdf-here-is-a-template-writeup-for-this-project-you-can-use-as-a-guide-and-a-starting-point"><a name="user-content-1-provide-a-writeup-readme-that-includes-all-the-rubric-points-and-how-you-addressed-each-one-you-can-submit-your-writeup-as-markdown-or-pdf-here-is-a-template-writeup-for-this-project-you-can-use-as-a-guide-and-a-starting-point" href="#1-provide-a-writeup-readme-that-includes-all-the-rubric-points-and-how-you-addressed-each-one-you-can-submit-your-writeup-as-markdown-or-pdf-here-is-a-template-writeup-for-this-project-you-can-use-as-a-guide-and-a-starting-point" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  <a href="https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md">Here</a> is a template writeup for this project you can use as a guide and a starting point.</h4>
-<p>You&rsquo;re reading it!</p>
+<p>The images for camera calibration are stored in the folder called <code>camera_cal</code>.  The images in <code>test_images</code> are for testing your pipeline on single frames.  If you want to extract more test images from the videos, you can simply use an image writing method like <code>cv2.imwrite()</code>, i.e., you can read the video in frame by frame as usual, and for frames you want to save for later you can write to an image file.  </p>
 <h3 id="project-structure"><a name="user-content-project-structure" href="#project-structure" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Project Structure</h3>
 <p>The solution consists of one Jupyter Notebook and several custom python modules. Most of the image processing logics and lane finding algorithms are split in the several python modules and stored in the &ldquo;lib&rdquo; folder, and I used the Jupyter Notebook as a client application that leverages these modules. Here is the overview of the project structure: <br />
 <img alt="alt text" src="/home/ubuntu/SourceControl/CarND-Advanced-Lane-Lines/output_images/carnd_advanced_lane.png" title="Project structure" /></p>
@@ -1051,7 +1044,7 @@ body .markdown-body
 <p>The code for this step is contained in the load_calibration_points method in the CameraCalibrator class.</p>
 <p>Using the provided chessboard images, the load_calibration_points method went through each chessboard image and tried to find chessboard corners with the pattern size of (9, 6) using OpenCV&rsquo;s findChessboardCorners function. If all of the corners are found and they are placed in a certain order (row by row, left to right in every row), I store the return value from OpenCV&rsquo;s findChessboardCorners in <code>objpoints</code> which is an array of #d points in the real world space and <code>imgpoints</code> which is an array of 2d points in image plane.</p>
 <p>Once the calibration points are loaded, I used calibrate_camera method in the CameraCalibrator class to compute the camera matrix and distortion coefficients. The calibrate_camera method leverages OpenCV&rsquo;s calibrateCamera function to compute the matrix and coefficients.</p>
-<p>Finally, I provided undistort method in the CameraCalibrator class which internally leverages OpenCV&rsquo;s undistort function, and I obtained these results:</p>
+<p>Finally, I provided the undistort method in the CameraCalibrator class which internally leverages OpenCV&rsquo;s undistort function, and I obtained these results:</p>
 <ul>
 <li>
 <p>Loading calibration points<br />
@@ -1141,7 +1134,7 @@ body .markdown-body
 where <br />
 <pre><code class="python">    line_fit_cr[0] = A and line_fit_cr[1] = B 
 </code></pre><br />
-where A and B are the first and second term in a second order polynormial curve such that:<br />
+where A and B are the first and second term in a second order polynomial curve such that:<br />
 <pre><code>    f(y) = A * y * y + B * y + C
 </code></pre></p>
 <p>The position of the vehicle can be calculated using the following code:<br />
@@ -1164,8 +1157,14 @@ where A and B are the first and second term in a second order polynormial curve 
 <hr />
 <h3 id="pipeline-video"><a name="user-content-pipeline-video" href="#pipeline-video" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Pipeline (video)</h3>
 <h4 id="1-provide-a-link-to-your-final-video-output-your-pipeline-should-perform-reasonably-well-on-the-entire-project-video-wobbly-lines-are-ok-but-no-catastrophic-failures-that-would-cause-the-car-to-drive-off-the-road"><a name="user-content-1-provide-a-link-to-your-final-video-output-your-pipeline-should-perform-reasonably-well-on-the-entire-project-video-wobbly-lines-are-ok-but-no-catastrophic-failures-that-would-cause-the-car-to-drive-off-the-road" href="#1-provide-a-link-to-your-final-video-output-your-pipeline-should-perform-reasonably-well-on-the-entire-project-video-wobbly-lines-are-ok-but-no-catastrophic-failures-that-would-cause-the-car-to-drive-off-the-road" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).</h4>
-<p>Here&rsquo;s a [link to my video result] for the project video (./project_video.mp4)</p>
+<p>Here&rsquo;s a video recording for the project video (./project_video.mp4):</p>
+<p><a href="https://www.youtube.com/watch?v=c71xPQXt2cg"><img alt="Alt text" src="https://img.youtube.com/vi/c71xPQXt2cg/0.jpg" /></a></p>
 <hr />
 <h3 id="discussion"><a name="user-content-discussion" href="#discussion" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Discussion</h3>
 <h4 id="1-briefly-discuss-any-problems-issues-you-faced-in-your-implementation-of-this-project-where-will-your-pipeline-likely-fail-what-could-you-do-to-make-it-more-robust"><a name="user-content-1-briefly-discuss-any-problems-issues-you-faced-in-your-implementation-of-this-project-where-will-your-pipeline-likely-fail-what-could-you-do-to-make-it-more-robust" href="#1-briefly-discuss-any-problems-issues-you-faced-in-your-implementation-of-this-project-where-will-your-pipeline-likely-fail-what-could-you-do-to-make-it-more-robust" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?</h4>
-<p>Here I&rsquo;ll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  </p></article></body></html>
+<p>I observed in the challenge_video.mp4 and harder_challenge_video_result.mp4 that it is difficult to identify car lines especially the white car lines with the binary threshold settings configured for the project video.</p>
+<p>I used the following techniques to make the pipeline more robust:<br />
+- I kept the previous line pixels for each car line. When no pixels were found for the current image frame, I used the previous line pixels to recover from the failure.</p>
+<p>Here are some ideas to make the pipeline more robust:<br />
+- Capture the brightness level of each frame, and depending on the brightness level, I may use a different binary threshold technique, i.e. using HSV filter in addition to existing LUV and LAB filters.<br />
+- Validation of the line pixels and line fitting curve based on the history of the line pixels and fitting values. When there is a sudden change to the distribution of line pixels and fitting values compared to the previous value, I may discard the current line pixels and use the previously captured line pixels or capture line pixels using different binary threshold technique.</p></article></body></html>

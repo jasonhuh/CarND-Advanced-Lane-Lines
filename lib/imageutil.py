@@ -31,8 +31,8 @@ class ImageUtil():
     def binary_thresholded_image(img, b_thresh_min=145, b_thresh_max=200, \
                                  l_thresh_min=215, l_thresh_max=255):
         """ Return the binary Thresholded image by combining multiple binary thresholds  """
-        l_channel = cv2.cvtColor(img, cv2.COLOR_BGR2LUV)[:, :, 0]  # Detect white lines
-        b_channel = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)[:, :, 2]  # Detect yellow lines
+        l_channel = cv2.cvtColor(img, cv2.COLOR_RGB2LUV)[:, :, 0]  # Detect white lines
+        b_channel = cv2.cvtColor(img, cv2.COLOR_RGB2Lab)[:, :, 2]  # Detect yellow lines
 
         l_binary = np.zeros_like(l_channel)
         l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1

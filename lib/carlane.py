@@ -12,21 +12,35 @@ class CarLane:
     xm_per_pix = 3.7 / 700
 
     def __init__(self):
+        self.counter = 0 # Tick tick tick
         self.left = Line()
         self.right = Line()
+        self.vehicle_position = 0.0
+        self.radius_of_curvature = 0.0
+        self.vehicle_position_text = '' # TODO: Move to a separate view model class
+        self.radius_of_curvature_text = '' # TODO: Move to a separate view model class
 
-    def vehicle_position(self, image_shape):
+    def get_vehicle_position(self, image_shape):
         """ Return the position of vehicle """
-        return abs(image_shape[1] // 2 - ((self.left.line_base_pos + self.right.line_base_pos) / 2))
+        self.vehicle_position = abs(image_shape[1] // 2 - ((self.left.line_base_pos + self.right.line_base_pos) / 2))
+        if self.vehicle_position_text == '' or self.counter % 3 == 0:
+            vpos_direction = 'left' if self.vehicle_position < image_shape[1] // 2 else 'right'
+            self.vehicle_position_text = '{:.2f}m {} of center'.format(self.vehicle_position * CarLane.xm_per_pix, vpos_direction)
+        return self.vehicle_position_text
 
-    def radius_of_curvature(self):
+    def get_radius_of_curvature(self):
         """ Return the radius of curvature """
-        return (self.left.radius_of_curvature + self.right.radius_of_curvature) // 2
+        self.radius_of_curvature = (self.left.radius_of_curvature + self.right.radius_of_curvature) // 2
+        if self.radius_of_curvature_text == '' or self.counter % 3 == 0:
+            self.radius_of_curvature_text = self.radius_of_curvature
+        return self.radius_of_curvature_text
+
 
     def find_lane_pixels(self, binary_warped):
         """ Initially, this method will route to the find_lane_pixels_ws.
             Then, it will route to the find_lane_pixels_fast to speed up the pixel findings.
          """
+        self.counter += 1
         if self.left.line_fit is None or self.right.line_fit is None:
             return self.__find_lane_pixels_ws(binary_warped)
         else:
